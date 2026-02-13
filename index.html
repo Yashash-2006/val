@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>A Magical Question</title>
+
+  <!-- Google Fonts: Cinzel Decorative for that magical feel -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- Confetti library -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+  <style>
+    :root {
+      --bg-dark: #1a1a1a;
+      --parchment: #fcf5e5;
+      --gryffindor-red: #740001;
+      --gryffindor-gold: #eebb00;
+      --text-color: #2b1b17;
+      --glow: 0 0 10px rgba(238, 187, 0, 0.6);
+    }
+
+    * { box-sizing: border-box; }
+
+    /* Floating particles animation */
+    /* ... existing animation code ... */
+    
+    body {
+      margin: 0;
+      min-height: 100svh;
+      display: grid;
+      place-items: center;
+      background-color: var(--bg-dark); 
+      background-image: url('hogwarts-background.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      font-family: 'Cinzel', serif;
+      overflow: hidden;
+      color: var(--text-color);
+    }
+    
+    /* Enhance readability over the image */
+    body::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.3); /* Subtle dark overlay */
+      pointer-events: none;
+      z-index: -1;
+    }
+
+/* ... existing styles ... */
+
+    .result {
+      display: none;
+      margin-top: 15px;
+      animation: appear 0.5s ease-out;
+    }
+    
+    .result h2 {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: clamp(24px, 5vw, 40px);
+      color: var(--gryffindor-red);
+      margin-bottom: 8px;
+    }
+    
+    /* Make the tenor embed fit nicely */
+    .tenor-gif-embed {
+      border-radius: 8px;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+      margin: 0 auto;
+      max-width: 350px !important; /* Force constraint */
+    }
+    
+    .patronus {
+      max-width: 100%;
+      height: auto;
+      max-height: 300px; /* Limit height to prevent overflow */
+      border-radius: 8px;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+      object-fit: contain;
+    }
+
+/* ... */
+
+    /* Floating particles animation */
+    @keyframes float {
+      0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.3; }
+      50% { transform: translateY(-20px) rotate(10deg); opacity: 0.7; }
+    }
+    
+    .sparkle {
+      position: absolute;
+      width: 4px; /* Slightly larger */
+      height: 4px;
+      background: white; /* Changed to white for contrast on gold */
+      border-radius: 50%;
+      box-shadow: 0 0 10px white, 0 0 20px var(--gryffindor-gold);
+      animation: float 4s infinite ease-in-out;
+    }
+
+    #confettiCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    .card {
+      position: relative;
+      width: min(600px, 90vw); /* Slightly smaller max width */
+      padding: 30px 20px; /* Reduced padding */
+      background: var(--parchment);
+      border-radius: 8px;
+      text-align: center;
+      box-shadow: 
+        0 0 30px rgba(0,0,0,0.5),
+        inset 0 0 60px rgba(139, 69, 19, 0.15);
+      border: double 6px var(--gryffindor-gold);
+      z-index: 10;
+    }
+
+    /* WAX SEAL DECORATION (CSS ONLY) */
+    .wax-seal {
+      position: absolute;
+      top: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 40px;
+      height: 40px;
+      background: #800000;
+      border-radius: 50%;
+      box-shadow: 
+        inset 0 0 10px rgba(0,0,0,0.4),
+        0 4px 6px rgba(0,0,0,0.3);
+      display: grid;
+      place-items: center;
+      color: rgba(255,255,255,0.2);
+      font-weight: bold;
+      font-size: 20px;
+      font-family: 'Cinzel Decorative', serif;
+      pointer-events: none;
+      z-index: 20;
+    }
+
+    /* Adjusted character circles to be smaller and closer */
+    .character-circle {
+        position: absolute;
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        border: 3px solid;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        font-family: 'Cinzel', serif;
+        font-weight: bold;
+        font-size: 11px;
+        z-index: 5;
+        overflow: hidden;
+        background-size: cover;
+        background-position: center;
+    }
+    
+
+
+    .snitch-container {
+      width: 140px;
+      height: 90px;
+      margin: 0 auto 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      filter: drop-shadow(0 0 15px rgba(238, 187, 0, 0.4));
+    }
+
+    /* SNITCH SVG STYLING */
+    .snitch-body {
+      fill: radial-gradient(circle at 30% 30%, #ffd700, #b8860b);
+      stroke: #daa520;
+      stroke-width: 1;
+    }
+    
+    .wing {
+      fill: rgba(255, 255, 255, 0.8);
+      stroke: #ccc;
+      stroke-width: 1;
+      transform-origin: 100px 60px; /* Pivots around center */
+    }
+    
+    .wing-left {
+      animation: flutterLeft 0.15s infinite alternate ease-in-out;
+    }
+    
+    .wing-right {
+      animation: flutterRight 0.15s infinite alternate ease-in-out;
+    }
+
+    @keyframes flutterLeft {
+      from { transform: rotate(-10deg) scaleX(1); }
+      to { transform: rotate(20deg) scaleX(0.8); }
+    }
+    
+    @keyframes flutterRight {
+      from { transform: rotate(10deg) scaleX(-1); }
+      to { transform: rotate(-20deg) scaleX(-0.8); }
+    }
+    
+    h1 {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: clamp(20px, 4vw, 32px); /* Reduced font size */
+      margin: 5px 0 15px;
+      color: var(--gryffindor-red);
+      text-shadow: 1px 1px 0px rgba(0,0,0,0.1);
+      line-height: 1.25;
+    }
+
+    .button-zone {
+      position: relative;
+      width: 100%;
+      height: 100px;
+      margin-top: 15px;
+    }
+
+    button {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      padding: 12px 24px;
+      font-family: 'Cinzel', serif;
+      font-size: 16px;
+      font-weight: 700;
+      border: 2px solid var(--gryffindor-gold);
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      transition: all 0.2s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    #yesBtn {
+      left: 15%;
+      background: var(--gryffindor-red);
+      color: var(--gryffindor-gold);
+    }
+    
+    #yesBtn:hover {
+      background: #500000;
+      box-shadow: 0 0 15px var(--gryffindor-gold);
+    }
+
+    #noBtn {
+      left: 65%;
+      background: #2a2a2a;
+      color: #ccc;
+      border-color: #444;
+    }
+
+    .hint {
+      margin-top: 4px;
+      font-size: 12px;
+      font-style: italic;
+      color: #555;
+    }
+
+
+
+    @keyframes appear {
+      from { transform: scale(0.9); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+  </style>
+</head>
+
+<body>
+  <div class="sparkle" style="top: 10%; left: 20%; animation-delay: 0s;"></div>
+  <div class="sparkle" style="top: 30%; left: 80%; animation-delay: 1s;"></div>
+  <div class="sparkle" style="top: 70%; left: 10%; animation-delay: 2s;"></div>
+  
+  <canvas id="confettiCanvas"></canvas>
+
+  <main class="card">
+    <div class="wax-seal">H</div>
+    
+    <!-- Character Circles -->
+    <div class="character-circle" style="top: -60px; left: -60px; background-image: url('https://ik.imagekit.io/hpapi/harry.jpg'); border-color: #eebb00;">
+    </div>
+    <div class="character-circle" style="top: -60px; right: -60px; background-image: url('https://ik.imagekit.io/hpapi/ron.jpg'); border-color: #eebb00;">
+    </div>
+    <div class="character-circle" style="bottom: -60px; left: -60px; background-image: url('https://ik.imagekit.io/hpapi/hermione.jpeg'); border-color: #eebb00;">
+    </div>
+    <div class="character-circle" style="bottom: -60px; right: -60px; background-image: url('dumbledore.png'); border-color: #silver;">
+    </div>
+
+    <!-- GOLDEN SNITCH SVG -->
+    <div class="snitch-container">
+      <svg width="200" height="120" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+        <!-- Wings -->
+        <path class="wing wing-left" d="M100 60 C 70 30, 20 20, 10 50 C 30 70, 80 70, 100 60 Z" />
+        <path class="wing wing-right" d="M100 60 C 130 30, 180 20, 190 50 C 170 70, 120 70, 100 60 Z" />
+        
+        <!-- Body -->
+        <circle cx="100" cy="60" r="15" fill="url(#snitchGold)" stroke="#b8860b" stroke-width="1.5" />
+        
+        <!-- Shine/Details on body -->
+        <path d="M92 56 Q 100 50, 108 56" fill="none" stroke="#fff" stroke-width="1" opacity="0.6"/>
+        <path d="M90 60 Q 100 70, 110 60" fill="none" stroke="#8b4500" stroke-width="0.5"/>
+        
+        <defs>
+          <radialGradient id="snitchGold" x1="30%" y1="30%" x2="70%" y2="70%">
+            <stop offset="0%" stop-color="#ffd700" />
+            <stop offset="100%" stop-color="#DAA520" />
+          </radialGradient>
+        </defs>
+      </svg>
+    </div>
+
+    <h1>I solemnly swear to be up to no good...<br>Will you go to the Yule Ball with me?</h1>
+    <!-- Alternate text idea for user to swap back: <h1>Pikachu, will you annoy me today?</h1> -->..
+    
+
+    <section class="button-zone" id="zone">
+      <button id="yesBtn">Always</button>
+      <button id="noBtn">Avada Kedavra</button>
+    </section>
+
+    <div class="hint" id="hint">Avoiding the "No" curse is tricky...</div>
+
+    <section class="result" id="result">
+      <h2>Mischief Managed! ✨</h2>
+      <div class="tenor-gif-embed" data-postid="8301515332049177599" data-share-method="host" data-aspect-ratio="1.16901" data-width="100%"><a href="https://tenor.com/view/harry-potter-cute-happy-gif-8301515332049177599">Harry Potter Cute GIF</a>from <a href="https://tenor.com/search/harry+potter-gifs">Harry Potter GIFs</a></div> <script type="text/javascript" async src="https://tenor.com/embed.js"></script>
+    </section>
+  </main>
+
+  <script>
+    const zone = document.getElementById("zone");
+    const yesBtn = document.getElementById("yesBtn");
+    const noBtn = document.getElementById("noBtn");
+    const result = document.getElementById("result");
+    const hint = document.getElementById("hint");
+
+    /* ---------- CONFETTI ---------- */
+    const confettiCanvas = document.getElementById("confettiCanvas");
+
+    function resizeConfettiCanvas() {
+      const dpr = Math.max(1, window.devicePixelRatio || 1);
+      confettiCanvas.width = window.innerWidth * dpr;
+      confettiCanvas.height = window.innerHeight * dpr;
+      confettiCanvas.style.width = "100vw";
+      confettiCanvas.style.height = "100vh";
+    }
+
+    resizeConfettiCanvas();
+    window.addEventListener("resize", resizeConfettiCanvas);
+
+    const confettiInstance = confetti.create(confettiCanvas, {
+      resize: true,
+      useWorker: true
+    });
+
+    function magicalConfetti() {
+      const end = Date.now() + 2000;
+
+      // Golden Snitch colors
+      const colors = ['#d4af37', '#740001', '#c0c0c0'];
+
+      (function frame() {
+        confettiInstance({
+          particleCount: 8,
+          spread: 80,
+          startVelocity: 40,
+          ticks: 200,
+          origin: { x: Math.random(), y: Math.random() * 0.4 },
+          colors: colors,
+          shapes: ['circle', 'star'] 
+        });
+        if (Date.now() < end) requestAnimationFrame(frame);
+      })();
+    }
+
+    /* ---------- YES BUTTON GROWS ---------- */
+    let yesScale = 1;
+    function growYes() {
+      yesScale = Math.min(2.5, yesScale + 0.15);
+      yesBtn.style.transform = `translateY(-50%) scale(${yesScale})`;
+    }
+
+    /* ---------- NO BUTTON RUNS AWAY (Apparates) ---------- */
+    function moveNo(px, py) {
+      const z = zone.getBoundingClientRect();
+      const b = noBtn.getBoundingClientRect();
+
+      // Simple jump to random spot logic for "Apparation" feel
+      // Instead of smooth glide, let's make it jump faster or instant
+      
+      const padding = 20;
+      const maxLeft = z.width - b.width - padding;
+      const maxTop = z.height - b.height - padding;
+
+      let newLeft = Math.random() * maxLeft;
+      let newTop = Math.random() * maxTop;
+
+      // Ensure it doesn't land right under the mouse again immediately
+      // (Simplified logic: just random jump is often enough "magic")
+      
+      noBtn.style.left = Math.max(0, newLeft) + "px";
+      noBtn.style.top = Math.max(0, newTop) + "px";
+      
+      growYes();
+    }
+
+    // Trigger on hover/approach
+    zone.addEventListener("mousemove", e => {
+      const b = noBtn.getBoundingClientRect();
+      const dx = (b.left + b.width / 2) - e.clientX;
+      const dy = (b.top + b.height / 2) - e.clientY;
+      const dist = Math.hypot(dx, dy);
+
+      if (dist < 100) { // proximity radius
+        moveNo();
+      }
+    });
+
+    noBtn.addEventListener("click", e => {
+        e.preventDefault();
+        moveNo(); 
+    });
+
+    /* ---------- YES CLICK ---------- */
+    yesBtn.addEventListener("click", () => {
+      zone.style.display = "none";
+      hint.style.display = "none";
+      
+      // Hide other elements to save space
+      document.querySelector('h1').style.display = 'none';
+      document.querySelector('.snitch-container').style.display = 'none';
+      document.querySelector('.wax-seal').style.display = 'none';
+      
+      result.style.display = "block";
+      
+      // Update GIF src to the requested one
+      // document.querySelector('.patronus').src = "https://media.giphy.com/media/26BRzozg4TCJ50hRa/giphy.gif"; 
+      
+      magicalConfetti();
+    });
+  </script>
+</body>
+</html>
